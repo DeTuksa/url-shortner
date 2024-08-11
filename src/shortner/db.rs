@@ -27,10 +27,14 @@ impl UrlShortner {
 
 #[cfg(test)]
 mod tests {
+    use tempfile::TempDir;
+
     use super::*;
 
     fn setup_test_db() -> UrlShortner {
-        UrlShortner::new("sled://")
+        let temp_dir = TempDir::new().expect("Failed to create a temporary directory");
+        let temp_db_path = temp_dir.path().to_str().unwrap();
+        UrlShortner::new(temp_db_path)
     }
 
     #[test]
