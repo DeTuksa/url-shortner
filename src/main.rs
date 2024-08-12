@@ -1,38 +1,39 @@
-use clap::{Parser, Subcommand};
 use url_shortner::UrlShortner;
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use serde::{Deserialize, Serialize};
 
-#[derive(Parser)]
-#[command(name = "URL Shortner")]
-#[command(about = "URL shortner CLI tool")]
-struct Cli {
-    #[command(subcommand)]
-    command: Commands
+#[derive(Deserialize, Serialize)]
+struct ShortenReq {
+    url: String
 }
 
-#[derive(Subcommand)]
-enum Commands {
-    Shorten {
-        url: String
-    },
-    Retrieve {
-        code: String
-    }
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    let shortener = web::Data::new(UrlShortner::new("my_db"));
+    HttpServer::new(move || {
+        App::new()
+        .app_data(shortener.clone())
+        .route("/shorten", web::post().to(shorten_url))
+        .route("/{code}", web::get().to(redirect_url))
+    }).bind("127.0.0.1:8080")?
+    .run()
+    .await
 }
 
-fn main() {
-    let args = Cli::parse();
-    let shortner = UrlShortner::new("temp_db");
+async fn shorten_url(
+    shortner: web::Data<UrlShortner>,
+    req: web::Json<ShortenReq>
+) -> impl Responder {
+    let url = shortner.shorten_url(&req.url);
+    HttpResponse::Ok().json(url)
+}
 
-    match args.command {
-        Commands::Shorten { url } => {
-            let short_url = shortner.shorten_url(&url);
-            println!("Shortened URL: {}", short_url);
-        },
-        Commands::Retrieve { code } => {
-            match shortner.get_url(&code) {
-                Some(url) => println!("Original URL: {}", url),
-                None => eprintln!("Short url not found")
-            }
-        }
+async fn redirect_url(
+    shortener: web::Data<UrlShortner>,
+    code: web::Path<String>,
+) -> impl Responder {
+    match shortener.get_url(&code) {
+        Some(url) => HttpResponse::Found().append_header(("Location", url)).finish(),
+        None => HttpResponse::NotFound().body("Short code not found"),
     }
 }
