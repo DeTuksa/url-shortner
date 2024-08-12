@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::env;
 use url_shortner::UrlShortner;
 use vercel_runtime::{
     http::bad_request, process_request, process_response, run_service, service_fn, Body, Error,
@@ -28,7 +29,9 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn handler(req: Request) -> Result<Response<Body>, Error> {
-    let shortener = UrlShortner::new("db");
+    let db_name = env::var("DATABASE").expect("DATABASE must be set");
+    let collection = env::var("COLLECTION").expect("COLLECTION must be set");
+    let shortener = UrlShortner::new(&db_name, &collection).await;
     let payload = req.payload::<ShortenRequest>();
     match payload {
         Err(..) => bad_request(APIError {
@@ -40,7 +43,7 @@ async fn handler(req: Request) -> Result<Response<Body>, Error> {
             code: "no_payload",
         }),
         Ok(Some(body)) => {
-            let code = shortener.shorten_url(&body.url);
+            let code = shortener.shorten_url(&body.url).await;
             Ok(Response::builder()
                 .status(StatusCode::OK)
                 .header("Content-Type", "application/json")

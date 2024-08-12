@@ -2,3 +2,4 @@
 /sled:
 /temp_db
 /my_db
+.env

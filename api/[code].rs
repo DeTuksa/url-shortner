@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-
+use std::env;
 use serde::{Deserialize, Serialize};
 use url::Url;
 use url_shortner::UrlShortner;
@@ -25,7 +25,9 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn handler(req: Request) -> Result<Response<Body>, Error> {
-    let shortener = UrlShortner::new("db");
+    let db_name = env::var("DATABASE").expect("DATABASE must be set");
+    let collection = env::var("COLLECTION").expect("COLLECTION must be set");
+    let shortener = UrlShortner::new(&db_name, &collection).await;
     let parsed_url = Url::parse(&req.uri().to_string()).unwrap();
     let hash_query: HashMap<String, String> = parsed_url.query_pairs().into_owned().collect();
     let code_key = hash_query.get("code");
@@ -39,7 +41,7 @@ async fn handler(req: Request) -> Result<Response<Body>, Error> {
                 }
             );
         }
-        Some(code) => match shortener.get_url(&code) {
+        Some(code) => match shortener.get_url(&code).await {
             Some(url) => Ok(
                 Response::builder()
             .status(StatusCode::OK)

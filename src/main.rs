@@ -1,6 +1,7 @@
 use url_shortner::UrlShortner;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
+use std::env;
 
 #[derive(Deserialize, Serialize)]
 struct ShortenReq {
@@ -9,7 +10,9 @@ struct ShortenReq {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let shortener = web::Data::new(UrlShortner::new("my_db"));
+    let db_name = env::var("DATABASE").expect("DATABASE must be set");
+    let collection = env::var("COLLECTION").expect("COLLECTION must be set");
+    let shortener = web::Data::new(UrlShortner::new(&db_name, &collection).await);
     HttpServer::new(move || {
         App::new()
         .app_data(shortener.clone())
@@ -24,7 +27,7 @@ async fn shorten_url(
     shortner: web::Data<UrlShortner>,
     req: web::Json<ShortenReq>
 ) -> impl Responder {
-    let url = shortner.shorten_url(&req.url);
+    let url = shortner.shorten_url(&req.url).await;
     HttpResponse::Ok().json(url)
 }
 
@@ -32,7 +35,7 @@ async fn redirect_url(
     shortener: web::Data<UrlShortner>,
     code: web::Path<String>,
 ) -> impl Responder {
-    match shortener.get_url(&code) {
+    match shortener.get_url(&code).await {
         Some(url) => HttpResponse::Found().append_header(("Location", url)).finish(),
         None => HttpResponse::NotFound().body("Short code not found"),
     }
