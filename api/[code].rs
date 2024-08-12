@@ -25,7 +25,7 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn handler(req: Request) -> Result<Response<Body>, Error> {
-    let shortener = UrlShortner::new();
+    let shortener = UrlShortner::new("db");
     let parsed_url = Url::parse(&req.uri().to_string()).unwrap();
     let hash_query: HashMap<String, String> = parsed_url.query_pairs().into_owned().collect();
     let code_key = hash_query.get("code");
