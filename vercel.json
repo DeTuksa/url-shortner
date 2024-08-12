@@ -1,14 +1,8 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "api/index.rs",
-        "use": "@vercel/rust"
-      }
-    ],
-    "routes": [
-      { "src": "/shorten", "dest": "/api/index" },
-      { "src": "/(.+)", "dest": "/api/index" }
-    ]
+    "functions": {
+        "api/**/*.rs": {
+            "runtime": "vercel-rust@4.0.8"
+        }
+    }
   }
   
