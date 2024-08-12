@@ -1,4 +1,5 @@
 pub mod shortner;
+pub use shortner::UrlShortner;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
