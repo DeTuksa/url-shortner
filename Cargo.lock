@@ -1896,6 +1896,7 @@ dependencies = [
  "sled",
  "tempfile",
  "tokio",
+ "url",
  "vercel_runtime",
 ]
 

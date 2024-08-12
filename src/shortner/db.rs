@@ -6,9 +6,11 @@ pub struct UrlShortner {
 }
 
 impl UrlShortner {
-    pub fn new(db_path: &str) -> Self {
+    pub fn new() -> Self {
         Self {
-            db: sled::open(db_path).expect("Failed to open database")
+            db: sled::Config::new()
+            .temporary(true)
+            .open().unwrap()
         }
     }
 
@@ -27,14 +29,12 @@ impl UrlShortner {
 
 #[cfg(test)]
 mod tests {
-    use tempfile::TempDir;
-
     use super::*;
 
     fn setup_test_db() -> UrlShortner {
-        let temp_dir = TempDir::new().expect("Failed to create a temporary directory");
-        let temp_db_path = temp_dir.path().to_str().unwrap();
-        UrlShortner::new(temp_db_path)
+        // let temp_dir = TempDir::new().expect("Failed to create a temporary directory");
+        // let temp_db_path = temp_dir.path().to_str().unwrap();
+        UrlShortner::new()
     }
 
     #[test]

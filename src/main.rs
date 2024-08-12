@@ -9,7 +9,7 @@ struct ShortenReq {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let shortener = web::Data::new(UrlShortner::new("my_db"));
+    let shortener = web::Data::new(UrlShortner::new());
     HttpServer::new(move || {
         App::new()
         .app_data(shortener.clone())

@@ -28,7 +28,7 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn handler(req: Request) -> Result<Response<Body>, Error> {
-    let shortener = UrlShortner::new("db");
+    let shortener = UrlShortner::new();
     let payload = req.payload::<ShortenRequest>();
     match payload {
         Err(..) => bad_request(APIError {
