@@ -8,7 +8,7 @@ use vercel_runtime::{
 };
 
 #[derive(Deserialize, Serialize)]
-struct ShortenRequest {
+struct ShortenReq {
     url: String,
 }
 
@@ -32,7 +32,7 @@ async fn handler(req: Request) -> Result<Response<Body>, Error> {
     let db_name = env::var("DATABASE").expect("DATABASE must be set");
     let collection = env::var("COLLECTION").expect("COLLECTION must be set");
     let shortener = UrlShortner::new(&db_name, &collection).await;
-    let payload = req.payload::<ShortenRequest>();
+    let payload = req.payload::<ShortenReq>();
     match payload {
         Err(..) => bad_request(APIError {
             message: "Invalid payload",
