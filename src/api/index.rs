@@ -1,6 +1,12 @@
 use actix_web::{web, App, HttpServer, Responder, HttpResponse};
 use url_shortener::shortener::UrlShortener;
 use actix_web::dev::Server;
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize, Serialize)]
+struct ShortenRequest {
+    url: String
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
