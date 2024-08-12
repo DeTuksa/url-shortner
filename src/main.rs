@@ -2,6 +2,7 @@ use url_shortner::UrlShortner;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 use std::env;
+use dotenv::dotenv;
 
 #[derive(Deserialize, Serialize)]
 struct ShortenReq {
@@ -10,6 +11,7 @@ struct ShortenReq {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    dotenv().ok();
     let db_name = env::var("DATABASE").expect("DATABASE must be set");
     let collection = env::var("COLLECTION").expect("COLLECTION must be set");
     let shortener = web::Data::new(UrlShortner::new(&db_name, &collection).await);
